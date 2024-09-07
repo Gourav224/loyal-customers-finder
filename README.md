@@ -18,8 +18,8 @@ This project is a web application built with Next.js, TypeScript, and Tailwind C
 1. **Clone the repository:**
 
    ```bash
-   git clone <repository-url>
-   cd <repository-folder>
+   git clone https://github.com/Gourav224/loyal-customers-finder.git
+   cd loyal-customers-finder
    ```
 
 2. **Install dependencies:**
