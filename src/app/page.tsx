@@ -1,101 +1,146 @@
-import Image from "next/image";
+"use client"
+
+import { useState } from "react";
+import Papa from "papaparse";
+
+interface LogEntry {
+    timestamp: string;
+    pageId: string;
+    customerId: string;
+}
+
+interface CustomerPages {
+    [customerId: string]: Set<string>;
+}
+
+const parseLogFile = (log: string): LogEntry[] => {
+    // Assuming the CSV file has no header row
+    return Papa.parse(log, { header: false }).data.map((row) => ({
+        timestamp: row[0],
+        pageId: row[1],
+        customerId: row[2],
+    }));
+};
+
+const findLoyalCustomers = (
+    day1Logs: LogEntry[],
+    day2Logs: LogEntry[]
+): string[] => {
+    const day1Customers: CustomerPages = {};
+    const day2Customers: CustomerPages = {};
+
+    // Process Day 1 Logs
+    day1Logs.forEach(({ customerId, pageId }) => {
+        if (!day1Customers[customerId]) {
+            day1Customers[customerId] = new Set();
+        }
+        day1Customers[customerId].add(pageId);
+    });
+
+    // Process Day 2 Logs
+    day2Logs.forEach(({ customerId, pageId }) => {
+        if (!day2Customers[customerId]) {
+            day2Customers[customerId] = new Set();
+        }
+        day2Customers[customerId].add(pageId);
+    });
+
+    // Find loyal customers
+    const loyalCustomers: string[] = [];
+
+    for (const customerId in day1Customers) {
+        const day1Pages = day1Customers[customerId];
+        const day2Pages = day2Customers[customerId];
+        if (day2Pages && day1Pages.size >= 2 && day2Pages.size >= 2) {
+            loyalCustomers.push(customerId);
+        }
+    }
+
+    return loyalCustomers;
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    const [logFile1, setLogFile1] = useState<string>("");
+    const [logFile2, setLogFile2] = useState<string>("");
+    const [loyalCustomers, setLoyalCustomers] = useState<string[]>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    const handleFileChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        setLogFile: (value: string) => void
+    ) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            Papa.parse(file, {
+                complete: (result) => {
+                    const csvData = result.data as string[][];
+                    const csvString = csvData
+                        .map((row) => row.join(","))
+                        .join("\n");
+                    setLogFile(csvString);
+                },
+                header: false,
+                skipEmptyLines: true,
+            });
+        }
+    };
+
+    const handleSubmit = () => {
+        const day1Logs = parseLogFile(logFile1);
+        const day2Logs = parseLogFile(logFile2);
+        const customers = findLoyalCustomers(day1Logs, day2Logs);
+        setLoyalCustomers(customers);
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-900 text-white p-8">
+            <h1 className="text-3xl font-bold text-center mb-8">
+                Loyal Customers Finder
+            </h1>
+            <div className="max-w-4xl mx-auto bg-gray-800 shadow-md rounded-lg p-8 space-y-6">
+                <div>
+                    <label className="block text-gray-300">
+                        Upload Day 1 Log File (CSV):
+                    </label>
+                    <input
+                        type="file"
+                        accept=".csv"
+                        onChange={(e) => handleFileChange(e, setLogFile1)}
+                        className="mt-2"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-gray-300">
+                        Upload Day 2 Log File (CSV):
+                    </label>
+                    <input
+                        type="file"
+                        accept=".csv"
+                        onChange={(e) => handleFileChange(e, setLogFile2)}
+                        className="mt-2"
+                    />
+                </div>
+
+                <button
+                    onClick={handleSubmit}
+                    className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600"
+                >
+                    Find Loyal Customers
+                </button>
+
+                {loyalCustomers.length > 0 && (
+                    <div className="mt-8">
+                        <h2 className="text-xl font-bold">Loyal Customers:</h2>
+                        <ul className="list-disc pl-5 mt-4">
+                            {loyalCustomers.map((customerId, index) => (
+                                <li key={index} className="text-gray-300">
+                                    Customer ID: {customerId}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
