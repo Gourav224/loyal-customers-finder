@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Loyal Customers Finder
 
-## Getting Started
+This project is a web application built with Next.js, TypeScript, and Tailwind CSS. It identifies "loyal customers" based on their activity logs from two different days. Loyal customers are those who visited at least two unique pages on both days.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Upload CSV files for two different days.
+- Process and analyze log data to identify loyal customers.
+- Display a list of loyal customers.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Requirements
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Node.js (version 16 or later)
+- npm (or Yarn)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Installation
 
-## Learn More
+1. **Clone the repository:**
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   git clone <repository-url>
+   cd <repository-folder>
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Install dependencies:**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-## Deploy on Vercel
+3. **Install additional dependencies:**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   For CSV parsing, you need `papaparse`:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   ```bash
+   npm install papaparse
+   # or
+   yarn add papaparse
+   ```
+
+## Usage
+
+1. **Start the development server:**
+
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+   The application will be available at [http://localhost:3000](http://localhost:3000).
+
+2. **Upload CSV files:**
+
+   - **Day 1 Log File:** Click the file input labeled "Upload Day 1 Log File (CSV)" and select your CSV file for Day 1.
+   - **Day 2 Log File:** Click the file input labeled "Upload Day 2 Log File (CSV)" and select your CSV file for Day 2.
+
+3. **Find Loyal Customers:**
+
+   Click the "Find Loyal Customers" button to process the uploaded log files and display the list of loyal customers.
+
+## Sample CSV Files
+
+To test the application, you can use the following sample CSV files:
+
+- **Day 1 Log File (`day1.csv`):**
+  
+  ```csv
+  Timestamp,PageId,CustomerId
+  2024-09-01T08:30:00,home,customer1
+  2024-09-01T09:00:00,product,customer1
+  2024-09-01T10:15:00,checkout,customer2
+  2024-09-01T11:00:00,home,customer3
+  2024-09-01T11:30:00,product,customer3
+  2024-09-01T12:00:00,product,customer4
+  ```
+
+  [Download Day 1 Log File (`day1.csv`)](https://pastebin.com/raw/vz3gH9t1)
+
+- **Day 2 Log File (`day2.csv`):**
+  
+  ```csv
+  Timestamp,PageId,CustomerId
+  2024-09-02T08:45:00,home,customer1
+  2024-09-02T09:30:00,checkout,customer1
+  2024-09-02T10:00:00,home,customer2
+  2024-09-02T10:45:00,product,customer2
+  2024-09-02T11:00:00,checkout,customer3
+  2024-09-02T12:30:00,checkout,customer4
+  2024-09-02T13:00:00,product,customer4
+  ```
+
+  [Download Day 2 Log File (`day2.csv`)](https://pastebin.com/raw/qzXQ8T9m)
+
+Save these files on your local machine and use them to test the functionality of the application.
+
